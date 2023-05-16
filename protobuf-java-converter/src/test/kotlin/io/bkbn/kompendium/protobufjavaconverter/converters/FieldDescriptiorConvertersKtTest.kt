@@ -27,6 +27,7 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 
 class FieldDescriptiorConvertersKtTest : DescribeSpec({
+  val componentSlug = "#/components/schemas"
   describe("fromTypeToSchemaTests") {
     val simpleMessageDescriptor = SimpleTestMessage.getDescriptor()
     it("java int field should return TypeDefinition INT") {
@@ -77,7 +78,7 @@ class FieldDescriptiorConvertersKtTest : DescribeSpec({
       val message = NestedMessage.getDescriptor()
       val result = fromNestedTypeToSchema(message.findFieldByName("nested_field"))
       result.shouldBeTypeOf<ReferenceDefinition>()
-      result.`$ref`.shouldBe(message.findFieldByName("nested_field").messageType.name)
+      result.`$ref`.shouldBe("$componentSlug/${message.findFieldByName("nested_field").messageType.name}")
     }
 
     it("Repeated message should return ArrayDefinition") {
@@ -85,7 +86,7 @@ class FieldDescriptiorConvertersKtTest : DescribeSpec({
       val result = fromNestedTypeToSchema(message.findFieldByName("repeated_field"))
       result.shouldBeTypeOf<ArrayDefinition>()
       result.items.shouldBeTypeOf<ReferenceDefinition>()
-      (result.items as ReferenceDefinition).`$ref`.shouldBe(SimpleTestMessage.getDescriptor().name)
+      (result.items as ReferenceDefinition).`$ref`.shouldBe("$componentSlug/${SimpleTestMessage.getDescriptor().name}")
     }
 
     it("Repeated enum message should return ArrayDefinition") {
@@ -93,7 +94,7 @@ class FieldDescriptiorConvertersKtTest : DescribeSpec({
       val result: JsonSchema = fromNestedTypeToSchema(message.findFieldByName("repeated_field"))
       result.shouldBeTypeOf<ArrayDefinition>()
       result.items.shouldBeTypeOf<ReferenceDefinition>()
-      (result.items as ReferenceDefinition).`$ref`.shouldBe(Corpus.getDescriptor().name)
+      (result.items as ReferenceDefinition).`$ref`.shouldBe("$componentSlug/${Corpus.getDescriptor().name}")
     }
 
     it("SimpleMapMessage message should return MapDefinition") {
@@ -169,7 +170,7 @@ class FieldDescriptiorConvertersKtTest : DescribeSpec({
       // Our nested field should be a reference
       result.shouldBeTypeOf<ReferenceDefinition>()
       // Our nested field should be a reference to simplemessage
-      result.`$ref`.shouldBe(SimpleTestMessage.getDescriptor().name)
+      result.`$ref`.shouldBe("$componentSlug/${SimpleTestMessage.getDescriptor().name}")
     }
 
     it("Double nested message to schema") {
@@ -201,11 +202,11 @@ class FieldDescriptiorConvertersKtTest : DescribeSpec({
       // Our nested field should be a reference
       result.shouldBeTypeOf<ReferenceDefinition>()
       // it should be a reference to our nested message
-      result.`$ref`.shouldBe(NestedMessage.getDescriptor().name)
+      result.`$ref`.shouldBe("$componentSlug/${NestedMessage.getDescriptor().name}")
       val nestedResult = (resultSchema[NestedMessage::class.createType()] as TypeDefinition).properties!!["nestedField"]
       nestedResult.shouldBeTypeOf<ReferenceDefinition>()
       // Our nested message reference should be pointing to simpleTest message
-      nestedResult.`$ref`.shouldBe(SimpleTestMessage.getDescriptor().name)
+      nestedResult.`$ref`.shouldBe("$componentSlug/${SimpleTestMessage.getDescriptor().name}")
       // last but not least we should have definition for our SimpleTest message which is not a reference
       (resultSchema[SimpleTestMessage::class.createType()] as TypeDefinition).shouldNotBeTypeOf<ReferenceDefinition>()
     }

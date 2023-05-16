@@ -134,7 +134,8 @@ fun handleMapField(
  */
 fun fromTypeToSchema(
   javaProtoField: Descriptors.FieldDescriptor,
-  cache: MutableMap<String, JsonSchema> = mutableMapOf()
+  cache: MutableMap<String, JsonSchema> = mutableMapOf(),
+  componentSlug: String = "#/components/schemas"
 ): JsonSchema {
   checkTypeCache(javaProtoField, cache)?.let { return it }
   return when (javaProtoField.javaType) {
@@ -150,7 +151,7 @@ fun fromTypeToSchema(
         type = "string",
         enum = javaProtoField.enumType.values.map { it.name }.toSet()
       )
-      ReferenceDefinition(javaProtoField.enumType.name)
+      ReferenceDefinition("$componentSlug/${javaProtoField.enumType.name}")
     }
     Descriptors.FieldDescriptor.JavaType.MESSAGE -> {
       // Traverse through possible nested messages
@@ -160,7 +161,7 @@ fun fromTypeToSchema(
           it.jsonName to fromNestedTypeToSchema(it, cache)
         }.toMap()
       )
-      ReferenceDefinition(javaProtoField.messageType.name)
+      ReferenceDefinition("$componentSlug/${javaProtoField.messageType.name}")
     }
     null -> NullableDefinition()
   }
